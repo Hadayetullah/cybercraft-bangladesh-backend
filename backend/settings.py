@@ -21,7 +21,7 @@ DEBUG = bool(env('DEBUG', default=0))
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS').split(" ")
 
 # Custom user model
-# AUTH_USER_MODEL = 'app_useraccount.User'
+AUTH_USER_MODEL = 'app_useraccount.User'
 
 # Website URL for media
 WEBSITE_URL = 'http://localhost:8000'
