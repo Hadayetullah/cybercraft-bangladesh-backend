@@ -51,8 +51,8 @@ class OTPVerifySerializer(serializers.Serializer):
 
         if user.otp != data['otp']:
             raise serializers.ValidationError("Invalid OTP.")
-        if not user.otp_is_valid():
-            raise serializers.ValidationError("OTP expired.")
+        # if not user.otp_is_valid():
+        #     raise serializers.ValidationError("OTP expired.")
 
         return data
 

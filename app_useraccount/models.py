@@ -55,11 +55,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name',]
 
 
-    def otp_is_valid(self):
-        """Checks if the OTP is valid and not expired."""
-        if self.otp and self.otp_created_at:
-            return timezone.now() < self.otp_created_at + timedelta(minutes=5)
-        return False
+    # def otp_is_valid(self):
+    #     """Checks if the OTP is valid and not expired."""
+    #     if self.otp and self.otp_created_at:
+    #         return timezone.now() < self.otp_created_at + timedelta(minutes=5)
+    #     return False
     
 
     def avater_url(self):
