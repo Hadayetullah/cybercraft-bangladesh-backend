@@ -9,32 +9,31 @@ from django.db import models
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
-    def _create_user(self, name, email, phone, password=None, **extra_fields):
+    def _create_user(self, name, email, password=None, **extra_fields):
         if not email:
             raise ValueError('You have not specified a valid email address')
         email = self.normalize_email(email)
-        user = self.model(name=name, email=email, phone=phone, **extra_fields)
+        user = self.model(name=name, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
 
         return user
     
-    def create_user(self, name=None, email=None, phone=None, password=None, **extra_fields):
+    def create_user(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(name, email, phone, password, **extra_fields)
+        return self._create_user(name, email, password, **extra_fields)
     
-    def create_superuser(self, name=None, email=None, phone=None, password=None, **extra_fields):
+    def create_superuser(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self._create_user(name, email, phone, password, **extra_fields)
+        return self._create_user(name, email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255, null=True, blank=True)
-    phone = models.CharField(max_length=20, null=True, blank=True)
     avater = models.ImageField(upload_to='uploads/avaters', null=True, blank=True)
 
     # OTP fields
@@ -43,6 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # Status flags
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -52,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'phone']
+    REQUIRED_FIELDS = ['name',]
 
 
     def otp_is_valid(self):
