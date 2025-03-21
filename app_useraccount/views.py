@@ -1,3 +1,8 @@
+from django.conf import settings
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,33 +27,55 @@ def get_tokens_for_user(user):
         'refreshToken': str(refresh),
         'accessToken': str(refresh.access_token),
     }
-
-# class RegisterView(APIView):
-#     permission_classes = [AllowAny]  # Allow anyone to access this view
-#     def post(self, request):
-#         serializer = RegisterSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             email = serializer.data.get('email')
-#             return Response({'msg': 'OTP sent to your email.', 'email': email}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
+        email = request.data.get('email')
+
+        # Check if user already exists
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            if not user.is_active:
+                # Generate a new OTP
+                user.otp = get_random_string(length=6, allowed_chars='0123456789')
+                user.otp_created_at = timezone.now()
+                user.save()
+
+                # Send new OTP via email
+                send_mail(
+                    subject="Your OTP Code",
+                    message=f"Your OTP code is {user.otp}",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[user.email],
+                )
+
+                # return Response(
+                #     {'error': 'User exists but is inactive. A new OTP has been sent to your email.'},
+                #     status=status.HTTP_403_FORBIDDEN
+                # )
+
+                return Response(
+                    {'msg': 'An OTP is sent to your email.', 'email': email},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            return Response({'error': 'User with this email already exists.'}, status=status.HTTP_409_CONFLICT)
+
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            email = serializer.data.get('email')
-            return Response({'msg': 'OTP sent to your email.', 'email': email}, status=status.HTTP_201_CREATED)
+            return Response({'msg': 'An OTP is sent to your email.', 'email': serializer.data.get('email')}, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             if 'email' in e.detail:
                 return Response({'error': 'User with this email already exists.'}, status=status.HTTP_409_CONFLICT)
             # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
     
 
 

@@ -66,28 +66,9 @@ class OTPVerifySerializer(serializers.Serializer):
     
 
 
-class LoginSerializer(serializers.Serializer):  # Use Serializer instead of ModelSerializer
+class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
-
-    # def validate(self, data):
-    #     email = data.get('email')
-    #     password = data.get('password')
-
-    #     if email and password:
-    #         user = User.objects.get(email=email)
-    #         if not user.is_active:
-    #             raise serializers.ValidationError("User account is disabled.", code='user_inactive')
-            
-    #         user = authenticate(email=email, password=password)
-    #         if user is None:
-    #             raise serializers.ValidationError("Invalid email or password.", code='authentication_failed')
-            
-    #     else:
-    #         raise serializers.ValidationError("Both email and password are required.")
-
-    #     data['user'] = user
-    #     return data
 
     def validate(self, data):
         email = data.get('email')
@@ -96,10 +77,34 @@ class LoginSerializer(serializers.Serializer):  # Use Serializer instead of Mode
         if email and password:
             try:
                 user = User.objects.get(email=email)
-                if not user.is_active:
+                if not user.check_password(password):  # Check the hashed password
                     raise serializers.ValidationError({
                         "non_field_errors": [
-                            {"message": "User account is disabled.", "code": "user_inactive"}
+                            {"message": "Invalid email or password", "code": "authentication_failed"}
+                        ]
+                    })
+            
+                if not user.is_active:
+                    # raise serializers.ValidationError({
+                    #     "non_field_errors": [
+                    #         {"message": "User account is disabled", "code": "user_inactive"}
+                    #     ]
+                    # })
+
+                    user.otp = get_random_string(length=6, allowed_chars='0123456789')
+                    user.otp_created_at = timezone.now()
+                    user.save()
+
+                    send_mail(
+                        subject="Your OTP Code",
+                        message=f"Your OTP code is {user.otp}",
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[user.email],
+                    )
+
+                    raise serializers.ValidationError({
+                        "errors": [
+                            {'msg': 'An OTP is sent to your email.', 'email': email}
                         ]
                     })
                 
@@ -107,13 +112,14 @@ class LoginSerializer(serializers.Serializer):  # Use Serializer instead of Mode
                 if user is None:
                     raise serializers.ValidationError({
                         "non_field_errors": [
-                            {"message": "Invalid email or password.", "code": "authentication_failed"}
+                            {"message": "Invalid email or password", "code": "authentication_failed"}
                         ]
                     })
+                
             except User.DoesNotExist:
                 raise serializers.ValidationError({
                     "non_field_errors": [
-                        {"message": "Invalid email or password.", "code": "authentication_failed"}
+                        {"message": "Invalid email or password", "code": "authentication_failed"}
                     ]
                 })
         else:
