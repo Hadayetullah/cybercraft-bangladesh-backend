@@ -14,7 +14,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
-from .serializers import RegisterSerializer, OTPVerifySerializer, LoginSerializer
+from .serializers import RegisterSerializer, OTPVerifySerializer, LoginSerializer, UserSerializer
 from .models import User
 
 
@@ -24,8 +24,8 @@ from .models import User
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {
-        'refreshToken': str(refresh),
-        'accessToken': str(refresh.access_token),
+        'refresh_token': str(refresh),
+        'access_token': str(refresh.access_token),
     }
         
 
@@ -87,9 +87,12 @@ class OTPVerifyView(APIView):
             user = serializer.save()
 
             token = get_tokens_for_user(user)
+            user_data = UserSerializer(user).data
+
             return Response({
                 'msg': 'User verification successful',
-                'token': token
+                'token': token,
+                "user": user_data # Include user data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -103,7 +106,9 @@ class LoginView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             token = get_tokens_for_user(user)
-            return Response({'token': token, 'msg': 'Logged in successfully'}, status=status.HTTP_200_OK)
+            user_data = UserSerializer(user).data
+
+            return Response({'token': token, 'msg': 'Logged in successfully', "user": user_data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -144,8 +149,8 @@ class RefreshBothTokensUnauthUser(APIView):
             new_tokens = get_tokens_for_user(user)
             
             return Response({
-                'refreshToken': new_tokens['refreshToken'],
-                'accessToken': new_tokens['accessToken'],
+                'refresh_token': new_tokens['refresh_token'],
+                'access_token': new_tokens['access_token'],
                 'msg': 'Tokens refreshed successfully'
             }, status=status.HTTP_200_OK)
         
@@ -168,7 +173,7 @@ class RefreshAccessTokenUnauthUser(APIView):
             refresh = RefreshToken(refresh_token)
             
             return Response({
-                'accessToken': str(refresh.access_token),
+                'access_token': str(refresh.access_token),
                 'msg': 'Access token refreshed successfully'
             }, status=status.HTTP_200_OK)
         
@@ -202,8 +207,8 @@ class RefreshBothTokensAuthUser(APIView):
             new_tokens = get_tokens_for_user(user)
             
             return Response({
-                'refreshToken': new_tokens['refreshToken'],
-                'accessToken': new_tokens['accessToken'],
+                'refresh_token': new_tokens['refresh_token'],
+                'access_token': new_tokens['access_token'],
                 'msg': 'Tokens refreshed successfully'
             }, status=status.HTTP_200_OK)
         
@@ -226,7 +231,7 @@ class RefreshAccessTokenAuthUser(APIView):
             refresh = RefreshToken(refresh_token)
             
             return Response({
-                'accessToken': str(refresh.access_token),
+                'access_token': str(refresh.access_token),
                 'msg': 'Access token refreshed successfully'
             }, status=status.HTTP_200_OK)
         

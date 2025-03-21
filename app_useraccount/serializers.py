@@ -6,7 +6,12 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
+
 from .models import User
+
+# from django.contrib.auth import get_user_model
+# User = get_user_model()
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={'input_type':'password'}, write_only=True)
@@ -47,10 +52,10 @@ class OTPVerifySerializer(serializers.Serializer):
         try:
             user = User.objects.get(email=data['email'])
         except User.DoesNotExist:
-            raise serializers.ValidationError("User not found.")
+            raise serializers.ValidationError({"errors": "User not found."})
 
         if user.otp != data['otp']:
-            raise serializers.ValidationError("Invalid OTP.")
+            raise serializers.ValidationError({"errors": "Invalid OTP."})
         # if not user.otp_is_valid():
         #     raise serializers.ValidationError("OTP expired.")
 
@@ -127,3 +132,9 @@ class LoginSerializer(serializers.Serializer):
 
         data['user'] = user
         return data
+    
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'name']
