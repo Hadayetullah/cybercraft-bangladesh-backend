@@ -36,4 +36,4 @@ py manage.py runserver
 
 ### Note:
 
-Make sure the front-end. If not please visit the repo at https://github.com/Hadayetullah/cybercraft-bangladesh-frontend and see the readme instruction.
+Make sure the front-end is setup. If not please visit the repo at https://github.com/Hadayetullah/cybercraft-bangladesh-frontend and see the readme instruction.
