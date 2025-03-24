@@ -23,9 +23,9 @@ class CustomerMessage(APIView):
             try:
                 customer = Customer.objects.get(pk=pk)
                 serializer = CustomerMessageSerializer(customer)
-                return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+                return Response({"msg": "Customer fetched successfully", "data": serializer.data}, status=status.HTTP_200_OK)
             except Customer.DoesNotExist:
-                return Response({"msg": "Customer fetched successfully", "error": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             customers = Customer.objects.all()
             serializer = CustomerMessageSerializer(customers, many=True)
@@ -35,6 +35,6 @@ class CustomerMessage(APIView):
         try:
             customer = Customer.objects.get(pk=pk)
             customer.delete()
-            return Response({"msg": "Customer deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"msg": "Customer deleted successfully"}, status=status.HTTP_200_OK)
         except Customer.DoesNotExist:
             return Response({"error": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)

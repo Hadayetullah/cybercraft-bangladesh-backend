@@ -48,7 +48,7 @@ class RegisterView(APIView):
 
                 # Send new OTP via email
                 send_mail(
-                    subject="Your OTP Code",
+                    subject="CyberCraft Bangladesh",
                     message=f"Your OTP code is {user.otp}",
                     from_email=settings.EMAIL_HOST_USER,
                     recipient_list=[user.email],

@@ -33,7 +33,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         # Send OTP to the user's email
         send_mail(
-            subject="Your OTP Code",
+            subject="CyberCraft Bangladesh",
             message=f"Your OTP code is {user.otp}",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[user.email],
@@ -101,7 +101,7 @@ class LoginSerializer(serializers.Serializer):
                     user.save()
 
                     send_mail(
-                        subject="Your OTP Code",
+                        subject="CyberCraft Bangladesh",
                         message=f"Your OTP code is {user.otp}",
                         from_email=settings.EMAIL_HOST_USER,
                         recipient_list=[user.email],

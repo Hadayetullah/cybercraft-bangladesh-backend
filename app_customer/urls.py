@@ -3,5 +3,5 @@ from .views import CustomerMessage
 
 urlpatterns = [
     path('message/', CustomerMessage.as_view(), name='customer-list-create'),
-    path('customers/<int:pk>/', CustomerMessage.as_view(), name='customer-detail'),
+    path('message/<int:pk>/', CustomerMessage.as_view(), name='customer-detail'),
 ]
